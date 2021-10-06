@@ -12,7 +12,9 @@ RUN yarn install --frozen-lockfile --production
 # Rebuild the source code only when needed
 FROM node:alpine AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile && cp node_modules dev_modules
+RUN yarn install --production --ignore-scripts --prefer-offline && cp node_modules prod_modules && cp dev_modules node_modules
 COPY . .
 RUN yarn build
 
@@ -29,7 +31,7 @@ RUN adduser -S nextjs -u 1001
 # COPY --from=builder /app/next.config.js ./
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=proddeps /app/node_modules ./node_modules
+COPY --from=builder /app/prod_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
 USER nextjs
