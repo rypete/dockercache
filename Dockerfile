@@ -1,20 +1,20 @@
-# Install dependencies only when needed
-FROM node:alpine AS deps
-WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+# # Install dependencies only when needed
+# FROM node:alpine AS deps
+# WORKDIR /app
+# COPY package.json yarn.lock ./
+# RUN yarn install --frozen-lockfile
 
-FROM node:alpine AS proddeps
-WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production
+# FROM node:alpine AS proddeps
+# WORKDIR /app
+# COPY package.json yarn.lock ./
+# RUN yarn install --frozen-lockfile --production
 
 # Rebuild the source code only when needed
 FROM node:alpine AS builder
 WORKDIR /app
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile && cp node_modules dev_modules
-RUN yarn install --production --ignore-scripts --prefer-offline && cp node_modules prod_modules && cp dev_modules node_modules
+RUN yarn install --frozen-lockfile
+RUN yarn install --production --ignore-scripts --prefer-offline --modules-folder ./prod_modules
 COPY . .
 RUN yarn build
 
